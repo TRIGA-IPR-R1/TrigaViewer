@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+
+%:
+	dh $@
+
+execute_after_dh_install:
+	install -D -m755 debian/trigaviewer.wrapper debian/trigaviewer/usr/bin/trigaviewer
+	find debian/trigaviewer -type d -name __pycache__ -exec rm -rf {} +
+	find debian/trigaviewer -name '*.pyc' -delete

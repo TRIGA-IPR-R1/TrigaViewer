@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+export PYTHONPATH=/usr/share/trigaviewer${PYTHONPATH:+:$PYTHONPATH}
+exec /usr/bin/python3 -m trigaviewer "$@"

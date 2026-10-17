@@ -1,0 +1,6 @@
+files
+*.debhelper
+*.substvars
+.debhelper/
+debhelper-build-stamp
+trigaviewer/

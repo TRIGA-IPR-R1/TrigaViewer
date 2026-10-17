@@ -1,0 +1,20 @@
+Source: trigaviewer
+Section: science
+Priority: optional
+Maintainer: Thalles Campagnani <thallescampagnani@gmail.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Homepage: https://github.com/TRIGA-IPR-R1/TrigaViewer
+Rules-Requires-Root: no
+
+Package: trigaviewer
+Architecture: all
+Depends: python3 (>= 3.10), ${misc:Depends}
+Suggests: trigaserver
+Description: visualizador web em tempo real do TrigaServer
+ TrigaViewer e a interface web de graficos em tempo real das variaveis
+ do Reator Nuclear TRIGA IPR-R1, publicadas pelo TrigaServer.
+ .
+ A ponte Python conecta-se ao TrigaServer e serve a interface em
+ http://127.0.0.1:8081 (ou no endereco definido em /etc/trigaviewer.conf).
+ O servico systemd inicia depois de trigaserver.service.

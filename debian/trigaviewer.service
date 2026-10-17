@@ -1,0 +1,20 @@
+[Unit]
+Description=TrigaViewer — visualizador web do TrigaServer
+Documentation=https://github.com/TRIGA-IPR-R1/TrigaViewer
+After=network-online.target trigaserver.service
+Wants=network-online.target trigaserver.service
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=2
+DynamicUser=yes
+NoNewPrivileges=yes
+ExecStart=/usr/bin/trigaviewer --config /etc/trigaviewer.conf --no-browser
+
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

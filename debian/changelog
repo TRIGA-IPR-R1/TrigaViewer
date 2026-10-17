@@ -1,0 +1,44 @@
+trigaviewer (1.0.6) unstable; urgency=medium
+
+  * Adiciona novas variáveis a lista de categorias.
+
+ -- Thalles Campagnani <thallescampagnani@gmail.com>  Fri, 16 Oct 2026 23:54:00 -0300
+
+trigaviewer (1.0.5) unstable; urgency=medium
+
+  * Não envia ao navegador linhas CSV idênticas à amostra anterior.
+
+ -- Thalles Campagnani <thallescampagnani@gmail.com>  Thu, 15 Oct 2026 23:15:00 -0300
+
+trigaviewer (1.0.4) unstable; urgency=medium
+
+  * Fallback das grandezas originais do CLP: mV, vazão primária em mA.
+
+ -- Thalles Campagnani <thallescampagnani@gmail.com>  Thu, 15 Oct 2026 22:15:00 -0300
+
+trigaviewer (1.0.3) unstable; urgency=medium
+
+  * Mostra falha de leitura do CLP no status (OPC STATE 1/2).
+  * Mostrador exibe "sem leitura" em vez do traço gigante.
+
+ -- Thalles Campagnani <thallescampagnani@gmail.com>  Thu, 15 Oct 2026 21:10:00 -0300
+
+trigaviewer (1.0.2) unstable; urgency=medium
+
+  * Seletores em cascata: dispositivo, canal e campo.
+  * Unidades herdadas do cabecalho CSV do TrigaServer.
+
+ -- Thalles Campagnani <thallescampagnani@gmail.com>  Thu, 15 Oct 2026 17:10:00 -0300
+
+trigaviewer (1.0.1) unstable; urgency=medium
+
+  * Preserva inf/-inf do periodo no SSE, na memoria e no CSV, sem derrubar
+    o fluxo EventSource.
+
+ -- Thalles Campagnani <thallescampagnani@gmail.com>  Thu, 15 Oct 2026 11:54:00 -0300
+
+trigaviewer (1.0.0) unstable; urgency=medium
+
+  * Initial release.
+
+ -- Thalles Campagnani <thallescampagnani@gmail.com>  Thu, 13 Aug 2026 23:03:00 -0300

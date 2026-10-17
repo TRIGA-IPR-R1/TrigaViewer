@@ -1,0 +1,3 @@
+trigaviewer usr/share/trigaviewer/
+web usr/share/trigaviewer/
+resources/trigaviewer.conf etc/

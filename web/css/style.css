@@ -1,0 +1,598 @@
+/*
+TrigaViewer - visualizador web de graficos em tempo real do TrigaServer.
+Copyright (C) 2026 Thalles Campagnani
+Licenciado sob a GNU Affero General Public License v3 ou posterior.
+*/
+
+:root {
+  --bg: #0b0f16;
+  --bg-raised: #121824;
+  --bg-input: #0d131d;
+  --border: #223049;
+  --border-strong: #2f4160;
+  --text: #e6ecf5;
+  --text-dim: #8fa0bb;
+  --accent: #4cc2ff;
+  --accent-dark: #1d6f9c;
+  --ok: #56d364;
+  --warn: #e3b341;
+  --error: #ff7b72;
+  --radius: 10px;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+/* Varios blocos aqui usam display: flex, que sozinho venceria o atributo
+   hidden do HTML; sem isto o marcador de "escolha a variavel" continuaria
+   aparecendo por baixo do grafico ja montado. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(76, 194, 255, 0.10), transparent 60%),
+    var(--bg);
+  color: var(--text);
+  font: 15px/1.5 ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+h1, h2 { margin: 0; }
+
+button, input, select {
+  font: inherit;
+  color: inherit;
+}
+
+/* ------------------------------------------------------------------ */
+/* Barra superior                                                      */
+/* ------------------------------------------------------------------ */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px 24px;
+  flex-wrap: wrap;
+  padding: 14px 22px;
+  background: rgba(12, 17, 26, 0.9);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: auto;
+}
+
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  color: var(--accent);
+  fill: currentColor;
+  filter: drop-shadow(0 0 10px rgba(76, 194, 255, 0.4));
+}
+
+.brand-text h1 {
+  font-size: 19px;
+  letter-spacing: 0.2px;
+}
+
+.brand-text p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  flex: none;
+}
+
+#status[data-state="reading"] .status-dot {
+  background: var(--ok);
+  box-shadow: 0 0 0 4px rgba(86, 211, 100, 0.16);
+}
+
+#status[data-state="stopped"] .status-dot {
+  background: var(--text-dim);
+}
+
+#status[data-state="disconnected"] .status-dot { background: var(--error); }
+
+#status[data-state="degraded"] .status-dot {
+  background: var(--warn);
+  box-shadow: 0 0 0 4px rgba(227, 179, 65, 0.16);
+}
+
+.metrics {
+  display: flex;
+  gap: 22px;
+  margin: 0;
+}
+
+.metrics div { text-align: right; }
+
+.metrics dt {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-dim);
+}
+
+.metrics dd {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.top-controls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.top-controls .field {
+  min-width: 0;
+  flex: none;
+}
+
+.top-controls .field-narrow {
+  width: 168px;
+  max-width: 168px;
+}
+
+.top-controls button { white-space: nowrap; }
+
+/* ------------------------------------------------------------------ */
+/* Botoes                                                              */
+/* ------------------------------------------------------------------ */
+
+button {
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-raised);
+  padding: 9px 15px;
+  transition: background 120ms, border-color 120ms, color 120ms, opacity 120ms;
+}
+
+button:hover:not(:disabled) { border-color: var(--accent-dark); }
+
+button:disabled,
+select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: linear-gradient(180deg, #3fb2ef, #2a86c4);
+  border-color: #2a86c4;
+  color: #04121c;
+  font-weight: 650;
+}
+
+button.primary:hover:not(:disabled) { filter: brightness(1.08); }
+
+button.ghost { background: transparent; }
+
+button.danger:hover:not(:disabled) {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+button.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(76, 194, 255, 0.12);
+}
+
+/* ------------------------------------------------------------------ */
+/* Campos compactos do cabecalho                                       */
+/* ------------------------------------------------------------------ */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 11px;
+  width: 100%;
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Barra de ferramentas                                                */
+/* ------------------------------------------------------------------ */
+
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+}
+
+.toolbar-end {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toolbar-end { justify-self: end; }
+.toolbar-end button { white-space: nowrap; }
+
+.toolbar-start {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-self: start;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar-group label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+}
+
+.toolbar-group select { width: auto; }
+
+.bottombar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 22px;
+  border-top: 1px solid var(--border);
+}
+
+/* ------------------------------------------------------------------ */
+/* Graficos                                                            */
+/* ------------------------------------------------------------------ */
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+  gap: 18px;
+  padding: 20px 22px 40px;
+}
+
+.chart-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.chart-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.chart-title {
+  flex: 1;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-weight: 600;
+  min-width: 0;
+}
+
+.chart-title:hover { border-color: var(--border); }
+.chart-title:focus { border-color: var(--accent-dark); background: var(--bg-input); }
+
+.chart-tools {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+
+.tool {
+  padding: 5px 9px;
+  font-size: 12px;
+  color: var(--text-dim);
+  border-radius: 6px;
+}
+
+.tool-remove {
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px 9px;
+}
+
+.chart-plot {
+  height: 250px;
+  padding: 6px 8px 0;
+}
+
+.chart-card.is-tall .chart-plot { height: 440px; }
+
+.chart-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 250px;
+  padding: 20px;
+  text-align: center;
+  color: var(--text-dim);
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.014) 0 12px, transparent 12px 24px);
+}
+
+.chart-placeholder p { margin: 0; }
+
+.picker,
+.add-series.cascaded {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: min(100%, 820px);
+  align-items: center;
+}
+
+.picker select,
+.add-series.cascaded select {
+  flex: 1 1 150px;
+  min-width: 132px;
+}
+
+.picker button,
+.add-series.cascaded button {
+  flex: none;
+  white-space: nowrap;
+}
+
+.chart-foot {
+  border-top: 1px solid var(--border);
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.series-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.series-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-input);
+  font-size: 12.5px;
+}
+
+.series-color {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.series-name { color: var(--text-dim); }
+
+.series-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  min-width: 62px;
+  text-align: right;
+}
+
+.series-remove {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  padding: 0 4px;
+  font-size: 15px;
+  line-height: 1;
+  border-radius: 50%;
+}
+
+.series-remove:hover { color: var(--error); }
+
+.add-series {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.unit-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.gauge-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 250px;
+  padding: 20px;
+  text-align: center;
+  color: var(--text-dim);
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.014) 0 12px, transparent 12px 24px);
+}
+
+.gauge-placeholder p { margin: 0; }
+
+.gauge-face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 250px;
+  padding: 16px 20px 28px;
+  min-width: 0;
+}
+
+.chart-card.is-tall .gauge-placeholder,
+.chart-card.is-tall .gauge-face { height: 440px; }
+
+.chart-card.is-tall .gauge-value {
+  font-size: clamp(88px, 16vw, 180px);
+}
+
+.chart-card.is-tall .gauge-unit {
+  font-size: clamp(40px, 7vw, 84px);
+}
+
+.gauge-reading {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.28em;
+  margin: 0;
+  max-width: 100%;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.gauge-unit {
+  font-size: clamp(28px, 4.5vw, 52px);
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+
+.gauge-unit:empty { display: none; }
+
+.gauge-value {
+  font-size: clamp(52px, 9vw, 104px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  color: var(--accent);
+}
+
+.gauge-value.is-missing {
+  font-size: clamp(22px, 3.2vw, 36px);
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--text-dim);
+}
+
+/* ------------------------------------------------------------------ */
+/* Estado vazio                                                        */
+/* ------------------------------------------------------------------ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 70px 22px;
+  text-align: center;
+  color: var(--text-dim);
+}
+
+.empty-state svg {
+  width: 64px;
+  height: 64px;
+  color: var(--border-strong);
+}
+
+.empty-state h2 {
+  font-size: 18px;
+  color: var(--text);
+}
+
+.empty-state p { max-width: 52ch; margin: 0; }
+
+/* ------------------------------------------------------------------ */
+/* Ajustes no uPlot para o tema escuro                                 */
+/* ------------------------------------------------------------------ */
+
+.uplot,
+.u-wrap { width: 100% !important; }
+
+.u-cursor-x,
+.u-cursor-y {
+  border-color: rgba(140, 160, 190, 0.5) !important;
+}
+
+.u-cursor-pt { box-shadow: 0 0 0 2px rgba(11, 15, 22, 0.9); }
+
+.u-select {
+  background: rgba(76, 194, 255, 0.12);
+  border: 1px solid rgba(76, 194, 255, 0.35);
+}
+
+@media (max-width: 1100px) {
+  .topbar { justify-content: flex-end; }
+  .brand { margin-right: 0; width: 100%; }
+  .toolbar {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .toolbar-end { justify-self: center; }
+}
+
+@media (max-width: 720px) {
+  .metrics { gap: 14px; }
+  .charts { grid-template-columns: 1fr; padding: 16px 12px 32px; }
+  .topbar, .toolbar, .bottombar { padding-left: 14px; padding-right: 14px; }
+}
